@@ -1,11 +1,12 @@
 const {pool} = require("../database")
 
-const register = async (request, response) => {
-    try {
+async function register(request, response) {
+    let respuesta;
 
-        let sql = `INSERT INTO user (name, last_name, email, photo, password) 
-        VALUES (?, ?, ?, ?,?)`;
-        let values = [
+    try {
+        const sql = `INSERT INTO user (name, last_name, email, photo, password) 
+                     VALUES (?, ?, ?, ?, ?)`;
+        const values = [
             request.body.name,
             request.body.last_name,
             request.body.email,
@@ -13,61 +14,94 @@ const register = async (request, response) => {
             request.body.password
         ];
 
-        let [result] = await pool.query(sql, values);
-        console.log(result); 
+        const [result] = await pool.query(sql, values);
+        console.log(result);
 
         if (result.insertId) {
-            response.send(String(result.insertId));
+            respuesta = {
+                error: false,
+                codigo: 200,
+                mensaje: 'Usuario registrado exitosamente',
+                data: { id: result.insertId }
+            };
         } else {
-            response.send("-1"); 
+            respuesta = {
+                error: true,
+                codigo: 400,
+                mensaje: 'No se pudo registrar el usuario'
+            };
         }
-
-    } 
-    catch (error) {
+    } catch (error) {
         console.log(error);
-        response.status(500).send("Error al registrar usuario"); 
-    }                  
+        respuesta = {
+            error: true,
+            codigo: 500,
+            mensaje: 'Error al registrar usuario'
+        };
+    }
+
+    response.send(respuesta);
 }
 
 const login = async (request, response) =>{
-    try{
-
-        let email = request.body.email;
-        let password = request.body.password
-
-        if (email && password) {
-            let sql = `SELECT * FROM user WHERE email=?`
-            let values = [email];
-            let [result1] = await pool.query(sql, values);
-
-            if (result1.length > 0){
-                let user= result1[0];
-
-                if (password == user.password){
-
-                response.status(200).send({
-                    name: user.name,
-                    last_name: user.last_name,
-                    email: user.email,
-                    photo: user.photo})
-
+        
+    let respuesta;
+    
+        try {
+            const email = request.body.email;
+            const password = request.body.password;
+    
+            if (email && password) {
+                const sql = `SELECT * FROM user WHERE email=?`;
+                const values = [email];
+                const [result1] = await pool.query(sql, values);
+    
+                if (result1.length > 0) {
+                    const user = result1[0];
+    
+                    if (password === user.password) {
+                        respuesta = {
+                            error: false,
+                            codigo: 200,
+                            mensaje: 'Inicio de sesión exitoso',
+                            data: {
+                                name: user.name,
+                                last_name: user.last_name,
+                                email: user.email,
+                                photo: user.photo
+                            }
+                        };
+                    } else {
+                        respuesta = {
+                            error: true,
+                            codigo: 401,
+                            mensaje: 'Contraseña incorrecta'
+                        };
+                    }
                 } else {
-                    response.status(401).send("Contraseña incorrecta");
-                    console.log ("Contraseña incorrecta");
+                    respuesta = {
+                        error: true,
+                        codigo: 404,
+                        mensaje: 'Correo no encontrado'
+                    };
                 }
-
             } else {
-                response.status(404).send("Correo no encontrado");
-                console.log ("Correo no encontrado");
+                respuesta = {
+                    error: true,
+                    codigo: 400,
+                    mensaje: 'Es necesario introducir correo y contraseña'
+                };
             }
-        } else {
-            response.status(400).send("Es necesio introducir correo y contraseña");
+        } catch (error) {
+            console.log(error);
+            respuesta = {
+                error: true,
+                codigo: 500,
+                mensaje: 'Error al iniciar sesión'
+            };
         }
-
-    } catch (error){
-        console.log(error);
-        response.status(500).send("Error al iniciar sesión"); 
-    }
+    
+    response.send(respuesta);
 }
 
 module.exports = {register, login};
