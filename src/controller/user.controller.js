@@ -108,53 +108,72 @@ const login = async (request, response) =>{
 }
 
 async function edit(request, response) {
+    let respuesta;
 
-    let respuesta; 
+    if (!request.body.Id_user) {
+        response.status(400).send({
+            error: true,
+            codigo: 400,
+            mensaje: "El ID del usuario es obligatorio."
+        });
+        return;
+    }
 
-        try{
-            const sql = `UPDATE user 
-            SET name =  COALESCE(?, name), 
-            last_name = COALESCE (?, last_name),
-            email = COALESCE (?, email),
-            photo = COALESCE (?, photo)
-            WHERE Id_user=?`;
-            const values = [
-            request.body.name,
-            request.body.last_name,
-            request.body.email,
-            request.body.photo,
+    try {
+        const sql = `
+            UPDATE user 
+            SET 
+                name = COALESCE(?, name), 
+                last_name = COALESCE(?, last_name), 
+                email = COALESCE(?, email), 
+                photo = COALESCE(?, photo)
+            WHERE 
+                Id_user = ?`;
+
+        const values = [
+            request.body.name || null,
+            request.body.last_name || null,
+            request.body.email || null,
+            request.body.photo || null,
             request.body.Id_user
-            ];
+        ];
 
-            const [result] = await pool.query(sql, values);
-            console.log(result);
+        console.log("Datos enviados para actualización:", values);
 
-            if(result.length > 0){
+        const [result] = await pool.query(sql, values);
+        console.log("Resultado de la consulta:", result);
 
-                let user = result[0];
-
-                respuesta = {
-                    error: false,
-                    codigo: 200,
-                    mensaje: 'Usuario actualizado correctamente',
-                    data: {
-                        name: user.name,
-                        last_name: user.last_name,
-                        email: user.email,
-                        photo: user.photo
-                        }
-                    }
+        if (result.affectedRows > 0) {
+            respuesta = {
+                error: false,
+                codigo: 200,
+                mensaje: "Usuario actualizado correctamente",
+                data: {
+                    name: request.body.name,
+                    last_name: request.body.last_name,
+                    email: request.body.email,
+                    photo: request.body.photo
                 }
-        }catch (error) {
-            console.log(error);
+            };
+        } else {
             respuesta = {
                 error: true,
-                codigo: 500,
-                mensaje: 'Error al actualizar usuario'
+                codigo: 400,
+                mensaje: "No se pudo actualizar el usuario o los datos no cambiaron"
             };
         }
+    } catch (error) {
+        console.error("Error al actualizar usuario:", error);
+        respuesta = {
+            error: true,
+            codigo: 500,
+            mensaje: "Error al actualizar usuario"
+        };
+    }
+
     response.send(respuesta);
 }
+
 
 async function get (request, response){
     let respuesta; 

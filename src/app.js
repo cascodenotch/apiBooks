@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(usersRouters);
 app.use(function(req, res, next)
     {
-        res.status(404).json({message: "Endpoint doesnt found"})
+        res.status(404).json({message: "Endpoint not found"})
     })
 
 app.use(errorHandling);
