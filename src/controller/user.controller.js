@@ -16,7 +16,7 @@ async function register(request, response) {
         ];
 
         const [result] = await pool.query(sql, values);
-        console.log(result);
+        console.info("Consulta exitosa en register:", { sql, values, result });
 
         if (result.insertId) {
             respuesta = {
@@ -37,9 +37,9 @@ async function register(request, response) {
         respuesta = {
             error: true,
             codigo: 500,
-            mensaje: 'Error al registrar usuario'
+            mensaje: 'Error interno al registrar usuario'
         };
-    }
+        }
 
     response.send(respuesta);
 }
@@ -56,6 +56,7 @@ const login = async (request, response) =>{
                 const sql = `SELECT * FROM user WHERE email=?`;
                 const values = [email];
                 const [result1] = await pool.query(sql, values);
+                console.info("Consulta exitosa en login:", { sql, values, result1 });
     
                 if (result1.length > 0) {
                     
@@ -100,7 +101,7 @@ const login = async (request, response) =>{
             respuesta = {
                 error: true,
                 codigo: 500,
-                mensaje: 'Error al iniciar sesión'
+                mensaje: 'Error interno al iniciar sesión'
             };
         }
     
@@ -109,15 +110,6 @@ const login = async (request, response) =>{
 
 async function edit(request, response) {
     let respuesta;
-
-    if (!request.body.Id_user) {
-        response.status(400).send({
-            error: true,
-            codigo: 400,
-            mensaje: "El ID del usuario es obligatorio."
-        });
-        return;
-    }
 
     try {
         const sql = `
@@ -138,10 +130,8 @@ async function edit(request, response) {
             request.body.Id_user
         ];
 
-        console.log("Datos enviados para actualización:", values);
-
         const [result] = await pool.query(sql, values);
-        console.log("Resultado de la consulta:", result);
+        console.info("Consulta exitosa en edit:", { sql, values, result });
 
         if (result.affectedRows > 0) {
             respuesta = {
@@ -163,11 +153,11 @@ async function edit(request, response) {
             };
         }
     } catch (error) {
-        console.error("Error al actualizar usuario:", error);
+        console.error(error);
         respuesta = {
             error: true,
             codigo: 500,
-            mensaje: "Error al actualizar usuario"
+            mensaje: "Error interno al actualizar usuario"
         };
     }
 
@@ -181,10 +171,9 @@ async function get (request, response){
             const sql = `SELECT name, last_name, email, photo FROM user
             WHERE Id_user=?`;
             const value = request.body.Id_user;
-            console.log("ID del usuario recibido:", value);
-
+           
             const [result] = await pool.query(sql,value);
-            console.log(result);
+            console.info("Consulta exitosa en get:", { sql, value, result });
 
             if (result.length > 0){
 
@@ -201,6 +190,11 @@ async function get (request, response){
                     photo: user.photo
                     }
                 }
+            } else {respuesta = {
+                error: true,
+                codigo: 404,
+                mensaje: "Usuario no encontrado"
+            };
             }
         }
         catch(error) {
@@ -208,7 +202,7 @@ async function get (request, response){
             respuesta = {
                 error: true,
                 codigo: 500,
-                mensaje: 'Error al obtener usuario'
+                mensaje: 'Error interno al obtener usuario'
             };
         }
 
