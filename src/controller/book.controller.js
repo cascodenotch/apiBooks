@@ -215,6 +215,54 @@ async function deleteBook(request, response){
     response.send(respuesta);
 }
 
+async function getOneBook (request, response){
+    let respuesta;
+
+    const sql1 = `SELECT * FROM book`;
+    const [result1] = await pool.query(sql1);
+    let arrayBooks = result1;
+
+    try {
+
+        let bookId = parseInt(request.params.Id_book);
+        let book = arrayBooks.find(book => book.Id_book === bookId);
+
+        if (book){
+
+            const sql = `SELECT * FROM book
+            WHERE Id_book = ?`;
+            const values = [request.params.Id_book];
+
+            const [result] = await pool.query(sql, values);
+            console.info("Consulta exitosa en buscar:", { sql, values, result });
+
+            respuesta = {
+                error: false,
+                codigo: 200,
+                mensaje: 'Libro encontrado con éxito',
+                data: book
+            };
+
+        }
+        else{
+            respuesta = { 
+                error: true, 
+                codigo: 404, 
+                mensaje: 'No existe un libro con ese Id'};
+        }
+        
+    } catch (error) {
+        console.log(error);
+        respuesta = {
+            error: true,
+            codigo: 500,
+            mensaje: 'Error interno buscar'
+        };
+    }
+
+    response.send(respuesta);
+}
+
 // Nuevas
 
 async function getBooksByUser (request, response) {
@@ -267,4 +315,4 @@ async function getBooksByUserAndId (request,response){
 
 }
 
-module.exports = {getAllBooks, addBook, updateBook, deleteBook, getBooksByUser, getBooksByUserAndId};
+module.exports = {getAllBooks, addBook, updateBook, deleteBook, getOneBook, getBooksByUser, getBooksByUserAndId};
