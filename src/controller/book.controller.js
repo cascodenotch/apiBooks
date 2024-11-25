@@ -296,18 +296,6 @@ async function getBooksByUser (request, response) {
     
         const sql = `SELECT * FROM book
         WHERE Id_user = ?`;
-<<<<<<< HEAD
-        const param = request.param.Id_user;
-        const [result] = await pool.query(sql);
-        console.info("Consulta exitosa", { sql, param, result });
-
-        respuesta = {
-            error: false,
-            codigo: 200,
-            mensaje: 'Acceso a libros de usuario exitoso',
-            data: result
-        };
-=======
         const param = request.params.Id_user;
         const [result] = await pool.query(sql, [param]);
         console.info("Consulta exitosa", { sql, param, result });
@@ -319,7 +307,6 @@ async function getBooksByUser (request, response) {
                 mensaje: 'No se encontraron libros para este usuario'
             };
         }
->>>>>>> parte2
         
         else {
             respuesta = {
