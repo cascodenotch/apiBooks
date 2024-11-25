@@ -337,7 +337,6 @@ async function getBooksByUserAndId(request, response) {
         const sql = `SELECT * FROM book 
         WHERE Id_book = ? AND Id_user = ?`;
         const params = [request.query.Id_book, request.query.Id_user];
-
         const [result] = await pool.query(sql, params);
         console.info("Consulta exitosa", { sql, params, result });
 
