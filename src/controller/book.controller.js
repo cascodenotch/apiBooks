@@ -124,11 +124,11 @@ async function updateBook (request, response){
             WHERE 
                 Id_book = ?`;
             const values = [
-                request.body.title,
-                request.body.type,
-                request.body.author,
-                request.body.price,
-                request.body.photo,
+                request.body.title || null,
+                request.body.type || null,
+                request.body.author || null,
+                request.body.price || null,
+                request.body.photo || null,
                 request.body.Id_book
             ];
 
@@ -148,8 +148,8 @@ async function updateBook (request, response){
 
             respuesta = { 
                 error: true, 
-                codigo: 400, 
-                mensaje: 'No existe un libro con ese Id'};
+                codigo: 404, 
+                mensaje: 'No existe un libro con ese Id que se pueda modificar'};
 
         }
 
@@ -200,7 +200,7 @@ async function deleteBook(request, response){
             respuesta = { 
                 error: true, 
                 codigo: 404, 
-                mensaje: 'No existe un libro con ese Id'};
+                mensaje: 'No existe un libro con ese Id para borrar'};
         }
         
     } catch (error) {
@@ -248,7 +248,7 @@ async function getOneBook (request, response){
             respuesta = { 
                 error: true, 
                 codigo: 404, 
-                mensaje: 'No existe un libro con ese Id'};
+                mensaje: 'No existe un libro con ese Id para buscar'};
         }
         
     } catch (error) {
@@ -277,13 +277,23 @@ async function getBooksByUser (request, response) {
         const [result] = await pool.query(sql, [param]);
         console.info("Consulta exitosa", { sql, param, result });
 
-        respuesta = {
+        if (result.length === 0) {
+            respuesta = {
+                error: true,
+                codigo: 404,
+                mensaje: 'No se encontraron libros para este usuario'
+            };
+        }
+        
+        else {
+            respuesta = {
             error: false,
             codigo: 200,
             mensaje: 'Acceso a libros exitoso',
             data: result
-        };
-        
+            };
+        }
+
     } catch (error) {
         console.log(error);
         respuesta = {
@@ -296,23 +306,44 @@ async function getBooksByUser (request, response) {
     response.send(respuesta);
 }
 
-async function getBooksByUserAndId (request,response){
-
-    let respuesta; 
+async function getBooksByUserAndId(request, response) {
+    let respuesta;
 
     try {
-        
+       
+        const sql = `SELECT * FROM book 
+        WHERE Id_book = ? AND Id_user = ?`;
+        const params = [request.query.Id_book, request.query.Id_user];
+
+        const [result] = await pool.query(sql, params);
+        console.info("Consulta exitosa", { sql, params, result });
+
+        if (result.length === 0) {
+            respuesta = {
+                error: true,
+                codigo: 404,
+                mensaje: 'No se encontró el libro para este usuario'
+            };
+        } else {
+            respuesta = {
+                error: false,
+                codigo: 200,
+                mensaje: 'Acceso a libro exitoso',
+                data: result
+            };
+        }
+
     } catch (error) {
         console.log(error);
         respuesta = {
             error: true,
             codigo: 500,
-            mensaje: 'Error interno obtener libros'
+            mensaje: 'Error interno obtener libro'
         };
     }
 
     response.send(respuesta);
-
 }
+
 
 module.exports = {getAllBooks, addBook, updateBook, deleteBook, getOneBook, getBooksByUser, getBooksByUserAndId};

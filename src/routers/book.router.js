@@ -10,8 +10,12 @@ router.put('/books', booksCtrl.updateBook);
 
 router.delete('/books/', booksCtrl.deleteBook);
 
-router.get('/books/:Id_book', booksCtrl.getOneBook);
+router.get('/books/book/:Id_book', booksCtrl.getOneBook);
 
-router.get("/books/:Id_user", booksCtrl.getBooksByUser);
+// nuevas
+
+router.get('/books/user/:Id_user', booksCtrl.getBooksByUser);
+
+router.get('/books/filter', booksCtrl.getBooksByUserAndId);
 
 module.exports = router;
