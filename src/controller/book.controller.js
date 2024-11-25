@@ -41,6 +41,9 @@ async function addBook (request, response){
 
         let bookId = request.body.Id_book;
         let bookExists = false;  
+
+        let userId = request.body.Id_user;
+        let userExists = false;  
       
         const sql1 = `SELECT * FROM book`;
         const [result] = await pool.query(sql1);
@@ -51,12 +54,25 @@ async function addBook (request, response){
             }
         });
 
+        result.forEach(book => {
+            if (book.Id_user === userId) {
+                userExists = true;
+            }
+        });
+
         if (bookExists) {
             respuesta = { 
                 error: true, 
                 codigo: 400, 
                 mensaje: 'Libro ya existe'};
         } 
+
+        if (!userExists){
+            respuesta = { 
+                error: true, 
+                codigo: 404, 
+                mensaje: 'No existe el usuario'};
+        }
 
         else{
 
