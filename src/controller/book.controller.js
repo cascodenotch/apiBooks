@@ -338,7 +338,7 @@ async function getBooksByUserAndId(request, response) {
 
     try {
        
-        const sql = `SELECT * FROM book 
+        const sql = `SELECT * FROM book
         WHERE Id_book = ? AND Id_user = ?`;
         const params = [request.query.Id_book, request.query.Id_user];
         const [result] = await pool.query(sql, params);
@@ -355,7 +355,7 @@ async function getBooksByUserAndId(request, response) {
                 error: false,
                 codigo: 200,
                 mensaje: 'Acceso a libro exitoso',
-                data: result
+                data: result[0]
             };
         }
 
