@@ -46,15 +46,18 @@ async function addBook (request, response){
         let userExists = false;  
       
         const sql1 = `SELECT * FROM book`;
-        const [result] = await pool.query(sql1);
+        const [result1] = await pool.query(sql1);
+        
+        const sql2 = `SELECT * FROM user`;
+        const [result2] = await pool.query(sql2);
 
-        result.forEach(book => {
+        result1.forEach(book => {
             if (book.Id_book === bookId) {
                 bookExists = true;
             }
         });
 
-        result.forEach(book => {
+        result2.forEach(book => {
             if (book.Id_user === userId) {
                 userExists = true;
             }
@@ -122,9 +125,10 @@ async function updateBook (request, response){
         let userId = request.body.Id_user;
         let userExists = false;  
 
-        const sql1 = `SELECT * FROM book`;
+        const sql1 = `SELECT * FROM book
+        JOIN user ON book.Id_user = user.Id_user`;
         const [result] = await pool.query(sql1);
-
+        
         result.forEach(book => {
             if (book.Id_book === bookId) {
                 bookExists = true;
@@ -298,7 +302,7 @@ async function getBooksByUser (request, response) {
         WHERE Id_user = ?`;
         const param = request.params.Id_user;
         const [result] = await pool.query(sql, [param]);
-        console.info("Consulta exitosa", { sql, param, result });
+        console.info("Consulta exitosa getBooksByUser", { sql, param, result });
 
         if (result.length === 0) {
             respuesta = {
