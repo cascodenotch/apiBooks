@@ -39,56 +39,15 @@ async function addBook (request, response){
     
     try {
 
-        let bookId = request.body.Id_book;
-        let bookExists = false;  
-
-        let userId = request.body.Id_user;
-        let userExists = false;  
-      
-        const sql1 = `SELECT * FROM book`;
-        const [result1] = await pool.query(sql1);
-        
-        const sql2 = `SELECT * FROM user`;
-        const [result2] = await pool.query(sql2);
-
-        result1.forEach(book => {
-            if (book.Id_book === bookId) {
-                bookExists = true;
-            }
-        });
-
-        result2.forEach(book => {
-            if (book.Id_user === userId) {
-                userExists = true;
-            }
-        });
-
-        if (bookExists) {
-            respuesta = { 
-                error: true, 
-                codigo: 400, 
-                mensaje: 'Libro ya existe'};
-        } 
-
-        if (!userExists){
-            respuesta = { 
-                error: true, 
-                codigo: 404, 
-                mensaje: 'No existe el usuario'};
-        }
-
-        else{
-
-        const sql = `INSERT INTO book (Id_book, Id_user, title, type, author, price, photo) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        const sql = `INSERT INTO book (title, type, author, price, photo, Id_user) 
+        VALUES (?, ?, ?, ?, ?, ?)`;
         const values = [
-        request.body.Id_book,
-        request.body.Id_user,
         request.body.title,
         request.body.type,
         request.body.author,
         request.body.price,
-        request.body.photo
+        request.body.photo,
+        request.body.Id_user,
         ];
 
         const [result] = await pool.query(sql, values);
@@ -102,7 +61,7 @@ async function addBook (request, response){
         };
     }
         
-    } catch (error) {
+    catch (error) {
         console.log(error);
         respuesta = {
             error: true,
@@ -122,11 +81,7 @@ async function updateBook (request, response){
         let bookId = request.body.Id_book;
         let bookExists = false;
 
-        let userId = request.body.Id_user;
-        let userExists = false;  
-
-        const sql1 = `SELECT * FROM book
-        JOIN user ON book.Id_user = user.Id_user`;
+        const sql1 = `SELECT * FROM book`;
         const [result] = await pool.query(sql1);
         
         result.forEach(book => {
@@ -135,17 +90,12 @@ async function updateBook (request, response){
             }
         });
 
-        result.forEach(book => {
-            if (book.Id_user === userId) {
-                userExists = true;
-            }
-        });
 
-        if (!bookExists || !userExists ) {
+        if (!bookExists) {
             respuesta = { 
                 error: true, 
                 codigo: 404, 
-                mensaje: 'No existe un libro con ese Id o un usuario con ese Id'};
+                mensaje: 'No existe un libro con ese Id'};
         } 
 
         else {
@@ -169,7 +119,7 @@ async function updateBook (request, response){
             ];
 
             const [result] = await pool.query(sql, values);
-            console.info("Consulta exitosa en register:", { sql, values, result });
+            console.info("Consulta exitosa en update:", { sql, values, result });
 
             respuesta = {
                 error: false,
