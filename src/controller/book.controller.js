@@ -1,38 +1,5 @@
 const {pool} = require("../database")
 
-// Anteriores
-
-async function getAllBooks(request, response){
-
-    let respuesta;
-    
-    try{
-    
-        const sql = `SELECT * FROM book`;
-        const [result] = await pool.query(sql);
-        console.info("Consulta exitosa obtener libros", { sql, result });
-
-        respuesta = {
-            error: false,
-            codigo: 200,
-            mensaje: 'Obtener libros exitoso',
-            data: result
-        };
-
-    }
-    catch (error) {
-        console.log(error);
-        respuesta = {
-            error: true,
-            codigo: 500,
-            mensaje: 'Error interno obtener libros'
-        };
-    }
-    
-    response.send(respuesta);   
-
-}
-
 async function addBook (request, response){
 
     let respuesta; 
@@ -79,19 +46,11 @@ async function updateBook (request, response){
     try {
 
         let bookId = request.body.Id_book;
-        let bookExists = false;
 
-        const sql1 = `SELECT * FROM book`;
-        const [result] = await pool.query(sql1);
+        const sqlCheck = `SELECT * FROM book WHERE Id_book = ?`;
+        const [checkResult] = await pool.query(sqlCheck, [bookId]);
         
-        result.forEach(book => {
-            if (book.Id_book === bookId) {
-                bookExists = true;
-            }
-        });
-
-
-        if (!bookExists) {
+        if (checkResult.length == 0) {
             respuesta = { 
                 error: true, 
                 codigo: 404, 
@@ -145,102 +104,37 @@ async function updateBook (request, response){
 async function deleteBook(request, response){
     
     let respuesta;
+    
+        try {
+            const bookId = request.body.Id_book;
 
-    const sql1 = `SELECT * FROM book`;
-    const [result1] = await pool.query(sql1);
-    let arrayBooks = result1;
-
-    try {
-
-        let bookId = request.body.Id_book;
-        let arrayFiltrado = result1.filter (book => (book.Id_book != bookId))
-
-        if (arrayBooks.length != arrayFiltrado.length){
-
-            const sql = `DELETE book FROM book
-            WHERE Id_book = ?`;
-            const values = [request.body.Id_book];
-
-            const [result] = await pool.query(sql, values);
-            console.info("Consulta exitosa en delete:", { sql, values, result });
-
+            const sql = `DELETE FROM book WHERE Id_book = ?`;
+            const [result] = await pool.query(sql, [bookId]);
+    
+            if (result.affectedRows > 0) {
+                respuesta = {
+                    error: false,
+                    codigo: 200,
+                    mensaje: 'Libro eliminado con éxito'
+                };
+            } else {
+                respuesta = {
+                    error: true,
+                    codigo: 404,
+                    mensaje: 'No existe un libro con ese Id para borrar'
+                };
+            }
+        } catch (error) {
+            console.log(error);
             respuesta = {
-                error: false,
-                codigo: 200,
-                mensaje: 'Libro eliminado con éxito',
-                data: arrayFiltrado
+                error: true,
+                codigo: 500,
+                mensaje: 'Error interno al eliminar el libro'
             };
-
         }
-
-        else{
-            respuesta = { 
-                error: true, 
-                codigo: 404, 
-                mensaje: 'No existe un libro con ese Id para borrar'};
-        }
-        
-    } catch (error) {
-        console.log(error);
-        respuesta = {
-            error: true,
-            codigo: 500,
-            mensaje: 'Error interno eliminar'
-        };
-    }
-
+   
     response.send(respuesta);
 }
-
-async function getOneBook (request, response){
-    let respuesta;
-
-    const sql1 = `SELECT * FROM book`;
-    const [result1] = await pool.query(sql1);
-    let arrayBooks = result1;
-
-    try {
-
-        let bookId = parseInt(request.params.Id_book);
-        let book = arrayBooks.find(book => book.Id_book === bookId);
-
-        if (book){
-
-            const sql = `SELECT * FROM book
-            WHERE Id_book = ?`;
-            const values = [request.params.Id_book];
-
-            const [result] = await pool.query(sql, values);
-            console.info("Consulta exitosa en buscar:", { sql, values, result });
-
-            respuesta = {
-                error: false,
-                codigo: 200,
-                mensaje: 'Libro encontrado con éxito',
-                data: book
-            };
-
-        }
-        else{
-            respuesta = { 
-                error: true, 
-                codigo: 404, 
-                mensaje: 'No existe un libro con ese Id para buscar'};
-        }
-        
-    } catch (error) {
-        console.log(error);
-        respuesta = {
-            error: true,
-            codigo: 500,
-            mensaje: 'Error interno buscar'
-        };
-    }
-
-    response.send(respuesta);
-}
-
-// Nuevas
 
 async function getBooksByUser (request, response) {
 
@@ -322,4 +216,4 @@ async function getBooksByUserAndId(request, response) {
 }
 
 
-module.exports = {getAllBooks, addBook, updateBook, deleteBook, getOneBook, getBooksByUser, getBooksByUserAndId};
+module.exports = {addBook, updateBook, deleteBook, getBooksByUser, getBooksByUserAndId};
