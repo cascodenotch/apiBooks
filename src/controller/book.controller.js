@@ -110,12 +110,13 @@ async function deleteBook(request, response){
 
             const sql = `DELETE FROM book WHERE Id_book = ?`;
             const [result] = await pool.query(sql, [bookId]);
+            console.info("Consulta exitosa en delete:", { sql, bookId, result });
     
             if (result.affectedRows > 0) {
                 respuesta = {
                     error: false,
                     codigo: 200,
-                    mensaje: 'Libro eliminado con éxito'
+                    mensaje: 'Libro eliminado con éxito',
                 };
             } else {
                 respuesta = {
